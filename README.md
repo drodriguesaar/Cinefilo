@@ -1,2 +1,6 @@
-# Movies
-Projeto realizado utilizando Blazor
+# Cinéfilo
+Projeto realizado utilizando Blazor. Uma migração de um app que fiz em C# usando Xamarin.Forms.
+
+Procurei testar a proposta de reaproveitamento de código, e ai está o resultado. O trabalho foi realizado
+superficialmente, não aprofundei em todos os conceitos de desenvolvimento da plataforma mas deu pra ver
+que ela tem um bom potencial.
