@@ -1,0 +1,81 @@
+@page "/actordetails/{ID:int}";
+@inject NavigationManager NavigationManager;
+
+<div class="container-fluid" style="margin-bottom: 160px;">
+    <div class="row">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-sm-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item" role="button"><a href="/actorslist">Actors</a></li>
+                    <li class="breadcrumb-item active" role="button" aria-current="page">Details</li>
+                    <li class="breadcrumb-item active" role="button" aria-current="page">@Actor.Name</li>
+                </ol>
+            </nav>    
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+            <Animate
+                Delay="TimeSpan.FromSeconds(1)"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Animation="Animations.FadeIn">
+                    <img class="img img-thumbnail" src="@Actor.Photo" /><br>
+                    <h2 class="display-3">@Actor.Name</h2>
+            </Animate>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+            <Animate
+                Delay="TimeSpan.FromSeconds(1)"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Animation="Animations.FadeIn">
+                    <label>@Actor.Popularity</label>
+            </Animate>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <Animate
+                Delay="TimeSpan.FromSeconds(1)"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Animation="Animations.FadeIn">
+                    <div class="text-center mb-3">
+                        <h4>Biography</h4>
+                    </div>
+                    <div class="text-justify">
+                        @Actor.Bio
+                    </div>
+            </Animate>
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <Animate
+                Delay="TimeSpan.FromSeconds(1)"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Animation="Animations.FadeIn">
+                <button class="btn btn-primary btn-block btn-lg" @onclick="BackToActorsList">Back</button>
+            </Animate>
+        </div>
+    </div>
+</div>
+
+@code{
+    [Parameter]
+    public int ID { get; set; }
+    public ActorModel Actor { get; set; } = new ActorModel();
+    protected override async Task OnInitializedAsync()
+    {
+        var actorResult = await new PeopleService().GetActor(new MovieParameter
+        {
+            Id = this.ID,
+            Resource = MoviesApiResourcesConsts.SEARCH_PERSON
+        });
+        Actor = actorResult;
+    }
+    void BackToActorsList()
+    {
+        NavigationManager.NavigateTo("/actorslist");
+    }
+}

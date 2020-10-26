@@ -1,0 +1,69 @@
+   
+<div class="col col-lg-2 col-md-2 col-sm-2 col-xs-2">
+    <img height="50" width="50" src="/imgs/genres/@(GenerateGenreIcon())" class="img"/>
+    <br/>
+    <span class="text-muted">@Name</span>
+</div>
+
+@code 
+{
+    [Parameter]
+    public int ID { get; set; }
+    [Parameter]
+    public string Name { get; set; }
+
+    string GenerateGenreIcon()
+    {
+        var imgName = "";
+
+        switch (ID)
+        {
+            case (int)MovieEnums.Drama:
+                imgName = "ic_dramamovie.png";
+                break;
+            case (int)MovieEnums.Horror:
+                imgName = "ic_horrormovie.png";
+                break;
+            case (int)MovieEnums.Thriller:
+                imgName = "ic_thrillermovie.png";
+                break;
+            case (int)MovieEnums.Scifi:
+                imgName = "ic_scifimovie.png";
+                break;
+            case (int)MovieEnums.Family:
+                imgName = "ic_familymovie.png";
+                break;
+            case (int)MovieEnums.Music:
+                imgName = "ic_musicalmovie.png";
+                break;
+            case (int)MovieEnums.Comedy:
+                imgName = "ic_comedymovie.png";
+                break;
+            case (int)MovieEnums.Adventure:
+                imgName = "ic_adventuremovie.png";
+                break;
+            case (int)MovieEnums.Action:
+                imgName = "ic_actionmovie.png";
+                break;
+            case (int)MovieEnums.Animation:
+                imgName = "ic_animationmovie.png";
+                break;
+            case (int)MovieEnums.Romance:
+                imgName = "ic_romancemovie.png";
+                break;
+            case (int)MovieEnums.Crime:
+                imgName = "ic_crimemovie.png";
+                break;
+            case (int)MovieEnums.Fantasy:
+                imgName = "ic_fantasymovie.png";
+                break;
+            case (int)MovieEnums.Documentary:
+                imgName = "ic_documentarymovie.png";
+                break;
+            default:
+                imgName = "ic_tvmovie.png";
+                break;
+        }
+        return imgName;
+    }
+}

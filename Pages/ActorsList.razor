@@ -1,0 +1,152 @@
+@page "/actorslist";
+@inject NavigationManager NavigationManager;
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-9 col-lg-9 col-md-9 col-sm-9 col-xs-9">
+            <input type="text" value="@SearchTerm" @onchange="InpuActorTextOnChange" class="form-control"
+id="actorinput" placeholder="search an actor by name">
+        </div>
+        <div class="col-3 col-lg-3 col-md-3 col-sm-3 col-xs-3">
+            <button class="btn btn-primary btn-block" type="button"
+            @onclick="@(async ()=>{ await SearchActorsByTerm(false); })">Search</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            @if (IsCarregando)
+            {
+                <Loading />
+            }
+            else if (Actors != null && Actors.Any())
+            {
+                <Animate Animation="Animations.FadeIn" Duration="TimeSpan.FromSeconds(0.5)"
+    Delay="TimeSpan.FromSeconds(0.5)">
+                    <table class="table table-hover table-striped">
+                        @foreach (var actor in Actors)
+                        {
+                            <tr @onclick="(() => ActorDetails(actor))">
+                                <td class="col-3">
+                                    <img class="img img-thumbnail" src="@actor.Photo">
+                                </td>
+                                <td>
+                                    <h3>@actor.Name</h3><br />
+                                    <label>@actor.Adult</label><br />
+                                    <label>@actor.DOB</label>
+                                </td>
+                                <td class="col-3">
+                                    <div class="text-center">
+                                        <h5>
+                                            @actor.Popularity
+                                        </h5>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="3">
+                                <button class="btn btn-primary btn-block btn-lg" disabled="@IsCarregandoMais"
+                                @onclick="CarregarMais">
+                                    @(IsCarregando ? "Aguarde..." : "Carregar mais")
+                                </button>
+                            </td>
+                        </tr>
+                        </table>
+                    </Animate>
+            }
+            else
+            {
+                <NoContent />
+            }
+        </div>
+    </div>
+</div>
+@code{
+    public List<ActorModel> Actors { get; set; } = new List<ActorModel>();
+    public bool IsCarregando { get; set; }
+    public bool IsCarregandoMais { get; set; }
+    public int Page { get; set; } = 1;
+    public string SearchTerm { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.IsCarregando = true;
+        await BuscarAtores();
+        this.IsCarregando = false;
+    }
+
+    async Task BuscarAtores()
+    {
+        var actorsResult = await new PeopleService().GetActors(new MovieParameter
+        {
+            Resource = MoviesApiResourcesConsts.POPULAR_ACTORS,
+            Page = this.Page,
+        });
+        Actors.AddRange(actorsResult
+            .Select(m => new ActorModel
+        {
+            Name = m.Name,
+            ID = m.ID,
+            Photo = m.Photo,
+            Popularity = m.Popularity,
+            Gender = m.Gender,
+            DOB = m.DOB,
+            Bio = m.Bio.BuildAbreviatedDescription(50)
+        }).ToList());
+    }
+
+    async Task CarregarMais()
+    {
+        this.Page += 1;
+        this.IsCarregandoMais = true;
+        if (string.IsNullOrEmpty(this.SearchTerm))
+        {
+            await this.BuscarAtores();
+        }
+        else
+        {
+            await this.SearchActorsByTerm(true);
+        }
+        this.IsCarregandoMais = false;
+    }
+
+    async Task SearchActorsByTerm(bool isPagination)
+    {
+        if (string.IsNullOrEmpty(SearchTerm))
+        {
+            return;
+        }
+
+        var actorsResult = await new PeopleService().GetActors(new MovieParameter
+        {
+            Resource = MoviesApiResourcesConsts.SEARCH_PERSON,
+            Page = !isPagination ? 1 : this.Page,
+            Query = HttpUtility.UrlEncode(SearchTerm)
+        });
+        if (!isPagination)
+        {
+            this.Actors.Clear();
+        }
+        this.Actors.AddRange(actorsResult);
+    }
+
+    async Task InpuActorTextOnChange(ChangeEventArgs e)
+    {
+        this.SearchTerm = e.Value.ToString();
+
+        if (string.IsNullOrEmpty(this.SearchTerm))
+        {
+            this.Page = 1;
+            this.Actors.Clear();
+            this.IsCarregando = true;
+            await this.BuscarAtores();
+            this.IsCarregando = false;
+        }
+    }
+
+    void ActorDetails(ActorModel actor)
+    {
+        NavigationManager.NavigateTo($"/actordetails/{actor.ID}");
+    }
+}

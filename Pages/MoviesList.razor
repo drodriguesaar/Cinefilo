@@ -1,0 +1,165 @@
+@page "/movieslist";
+@inject NavigationManager NavigationManager;
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-9 col-lg-9 col-md-9 col-sm-9 col-xs-9">
+            <input 
+                type="text" 
+                value="@SearchTerm" 
+                @onchange="InpuMovieTextOnChange" 
+                class="form-control"
+                id="movieinput" 
+                placeholder="search a movie by name" />
+        </div>
+        <div class="col-3 col-lg-3 col-md-3 col-sm-3 col-xs-3">
+            <div class="input-group">
+                <button 
+                    class="btn btn-primary btn-block" 
+                    type="button" 
+                    @onclick="@(async ()=>{ await SearchMoviesByText(false); })">Search</button>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            @if (IsCarregando)
+            {
+                <Loading />
+            }
+            else if (Movies != null && Movies.Any())
+            {
+                <Animate 
+                    Animation="Animations.FadeIn" 
+                    Duration="TimeSpan.FromSeconds(0.5)"
+                    Delay="TimeSpan.FromSeconds(0.5)">
+                    <table class="table table-hover table-striped">
+                        @foreach (var movie in Movies)
+                        {
+                            <tr @onclick="(() => MovieDetails(movie))">
+                                <td class="col-3">
+                                    <img class="img img-thumbnail" src="@movie.Poster" />
+                                </td>
+                                <td>
+                                    <h3>@movie.Name</h3>
+                                    <b>Overview:</b> @movie.OverView<br />
+                                    <b>Votes received:</b> @movie.Votes
+                                </td>
+                                <td class="col-3">
+                                    <div class="mb-t text-center">
+                                        <b>Score</b>
+                                        <h1 class="text-primary">
+                                            <b>@movie.Score</b>
+                                        </h1>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                            <tr>
+                                <td colspan="3">
+                                    <button class="btn btn-primary btn-block btn-lg" disabled="@IsCarregandoMais"
+                                    @onclick="CarregarMais">
+                                        @(IsCarregando ? "Aguarde..." : "Carregar mais")
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                    </Animate>
+            }
+            else
+            {
+                <NoContent />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Page { get; set; } = 1;
+    public List<MovieModel> Movies { get; set; } = new List<MovieModel>();
+    public bool IsCarregando { get; set; } = true;
+    public bool IsCarregandoMais { get; set; } = false;
+    public string SearchTerm { get; set; }
+    public string EstadoBotao { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.IsCarregando = true;
+        await BuscarFilmes();
+        this.IsCarregando = false;
+    }
+    async Task CarregarMais()
+    {
+        this.Page += 1;
+        this.IsCarregandoMais = true;
+        if (string.IsNullOrEmpty(this.SearchTerm))
+        {
+            await BuscarFilmes();
+        }
+        else
+        {
+            await SearchMoviesByText(true);
+        }
+        this.IsCarregandoMais = false;
+    }
+    async Task BuscarFilmes()
+    {
+        var moviesResult = await new MovieService().GetMovies(new MovieParameter
+        {
+            Resource = MoviesApiResourcesConsts.UPCOMING_MOVIES,
+            Page = this.Page,
+        });
+        Movies.AddRange(moviesResult
+            .Select(m => new MovieModel
+                        {
+                            Name = m.Name,
+                            Score = m.Score,
+                            Poster = m.Poster,
+                            OverView = m.OverView,
+                            Id = m.Id,
+                            Votes = m.Votes
+                        }
+                    ).ToList());
+        
+    }
+    async Task SearchMoviesByText(bool isPagination)
+    {
+        if(string.IsNullOrEmpty(SearchTerm)){
+            return;
+        }
+
+        var moviesResult = await new MovieService().GetMovies(new MovieParameter
+        {
+            Resource = MoviesApiResourcesConsts.SEARCH_MOVIE,
+            Page = isPagination ? this.Page : 1,
+            Query = HttpUtility.UrlEncode(this.SearchTerm)
+        });
+
+        if(!isPagination)
+        {
+            this.Movies.Clear();
+        }
+
+        this.Movies.AddRange(moviesResult);
+    }
+
+    async Task InpuMovieTextOnChange(ChangeEventArgs e)
+    {
+        this.SearchTerm = e.Value.ToString();
+
+        if (string.IsNullOrEmpty(this.SearchTerm))
+        {
+            this.Page = 1;
+            this.Movies.Clear();
+            this.IsCarregando = true;
+            await this.BuscarFilmes();
+            this.IsCarregando = false;
+        }
+    }
+    void MovieDetails(MovieModel movie)
+    {
+        NavigationManager.NavigateTo($"/moviedetails/{movie.Id}");
+    }
+}

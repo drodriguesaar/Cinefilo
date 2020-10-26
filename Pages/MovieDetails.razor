@@ -1,0 +1,138 @@
+@page "/moviedetails/{Id:int}";
+@inject NavigationManager NavigationManager;
+
+<div class="container-fluid" style="margin-bottom: 160px;">
+<div class="row">
+    <div class="col col-lg-12 col-md-12 col-sm-12 col-sm-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" role="button"><a href="/movieslist">Movies</a></li>
+                <li class="breadcrumb-item active" role="button" aria-current="page">Details</li>
+            </ol>
+        </nav>    
+    </div>
+</div>
+@if(Movie != null)
+{
+    <Animate 
+        Animation="Animations.ZoomIn" 
+        Duration="TimeSpan.FromSeconds(0.5)"
+        Delay="TimeSpan.FromSeconds(0.5)">
+        <div class="row">
+            <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <img 
+                    class="img-fluid rounded mx-auto d-block" 
+                    style="height: 400px!important;"
+                    src="@Movie.Poster">
+            </div>
+        </div>
+    </Animate>
+    <Animate
+        Animation="Animations.FadeIn" 
+        Easing="BlazorAnimate.Easings.EaseIn"
+        Duration="TimeSpan.FromSeconds(0.5)"
+        Delay="TimeSpan.FromSeconds(0.5)">
+        <div class="row">
+            <div class="col col-xs-12 col-sm-12 col-md-12 col-lg-12 text-center mt-3">
+                <h1 class="display-4"><b>@Movie.Name</b></h1>
+                <div class="text-justify">
+                    <label><b>Classification:</b> @(Movie.Adult ? "18+ audiences":"All audiences")</label><br/>
+                    <label><b>Produced By:</b> @Movie.ProducedBy</label><br/>
+                    <label><b>Produced In:</b> @Movie.ProducedIn</label><br/>
+                    <label><b>Release Date:</b> @Movie.ReleaseDate</label><br/>
+                    <label><b>Revenue:</b> @(Movie.Revenue ?? "N/A")</label><br/>
+                    <label><b>Home Page:</b> <a href="@Movie.HomePage" target="_blank">@Movie.HomePage</a></label>
+                </div>
+            </div>
+        </div>
+    </Animate>
+    <div class="row">
+        <div class="col col-sm-6 col-xs-6 col-md-6 col-lg-6 text-center">
+            <Animate 
+                Animation="Animations.ZoomInRight" 
+                Easing="BlazorAnimate.Easings.EaseIn"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Delay="TimeSpan.FromSeconds(0.5)">
+                <label class="text-muted">Score</label>
+                <h1 class="display-2 text-primary">@Movie.Score</h1>
+            </Animate>
+        </div>
+        <div class="col col-sm-6 col-xs-6 col-md-6 col-lg-6 text-center">
+            <Animate
+                Animation="Animations.ZoomInLeft"
+                Easing="BlazorAnimate.Easings.EaseIn"
+                Duration="TimeSpan.FromSeconds(0.5)"
+                Delay="TimeSpan.FromSeconds(0.5)">
+                <label class="text-muted">Votes</label>
+                <h1 class="display-2 text-primary">@Movie.Votes</h1>
+            </Animate>
+        </div>
+    </div>
+    <Animate 
+        Animation="Animations.ZoomInUp"
+        Easing="BlazorAnimate.Easings.EaseIn"
+        Duration="TimeSpan.FromSeconds(0.5)"
+        Delay="TimeSpan.FromSeconds(0.5)">
+            <div class="row">
+                <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12 text-center">
+                    <h2>Genres</h2>
+                </div>
+            </div>
+            <div class="row text-center mt-3">
+                @foreach (var genre in Movie.Genres)
+                {
+                    <Genre ID="@genre.ID" Name="@genre.Name" />
+                }
+            </div>
+    </Animate>
+    <Animate
+        Animation="Animations.ZoomInUp"
+        Easing="BlazorAnimate.Easings.EaseIn"
+        Duration="TimeSpan.FromSeconds(0.5)"
+        Delay="TimeSpan.FromSeconds(0.5)">
+        <div class="row">
+            <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12 text-justify mt-3">
+                    <h2 class="text-center">Synopsis</h2>
+                    @Movie.OverView
+            </div>
+        </div>
+        <div class="row">
+        <div class="col col-lg-12 col-md-12 col-sm-12 col-xs-12 mt-3">
+                <button 
+                    class="btn btn-primary btn-block btn-lg"
+                    @onclick="BackToMoviesList">Back</button>
+            </div>
+        </div>
+    </Animate>
+}
+else {
+    <Loading/>
+}
+</div>
+
+@code{
+    [Parameter]
+    public int Id { get; set; }
+
+    public MovieModel Movie { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BuscarFilme();
+    }
+
+    async Task BuscarFilme()
+    {
+        var movieResult = await new MovieService().GetMovie(new MovieParameter
+        {
+            Id = this.Id
+        });
+        this.Movie = movieResult;
+
+    }
+
+    void BackToMoviesList()
+    {
+        NavigationManager.NavigateTo("/movieslist");
+    }
+}
