@@ -7,5 +7,5 @@ que ela tem um bom potencial.
 
 ## CMD ##
 
-Projeto criado utilizando o comando dotnet new blazorserver -o BlazorApp --no-https
+Projeto criado utilizando o comando dotnet new blazorserver -o BlazorApp --no-https e 
 API: https://developers.themoviedb.org/3/movies/get-upcoming
